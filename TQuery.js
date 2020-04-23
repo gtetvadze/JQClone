@@ -17,10 +17,15 @@
 		}
 		//default value asignments
 		settings = settings || {};
-		//
+		var obj = {};
 		obj.async = settings.async || "true";
 		obj.url = url || settings.url;
 		obj.method = settings.method || "GET";
+		obj.responseType = settings.responseType || "json";
+		obj.success = settings.success || function(){};
+		obj.fail = settings.fail || function(){};
+		obj.beforeLoad = settings.beforeLoad || function(){};
+		obj.done = settings.done || function(){};
 		//
 
 		if (window.XMLHttpRequest){
@@ -28,24 +33,22 @@
 		} else {
 		  	xhr = new ActiveXObject("Microsoft.XMLHTTP");
 		}
-
+		// exec callback
+		obj.beforeLoad.call(this);
+		xhr.responseType = obj.responseType;
 		xhr.open(obj.method,obj.url,obj.async);
 		xhr.send();
-
-		
-		
-
 		xhr.onreadystatechange = function() {
 			obj.status = xhr.status;
 			obj.readyState = xhr.readyState;
 			obj.statusText = xhr.statusText;
 		  	if (xhr.readyState == 4 && xhr.status == 200) {
-		    	this.onDone;
-		    }
+				obj.success.call(this, xhr.response);
+		    	}else{
+				obj.fail.call(this);	
+			}
+			obj.done.call(this);
 		}
-
-		console.log(xhr.response);
-		return obj;
 	};
 			
 
